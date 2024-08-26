@@ -129,7 +129,7 @@ function Hero ()  {
     
   </div>
   
-  <div className="bg  row-span-2 col-span-2">
+  <div className="bg    py-32 row-span-2 col-span-2">
   <a href="#">
             <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Noteworthy technology acquisitions 2021</h5>
@@ -144,7 +144,7 @@ function Hero ()  {
  
 
   <div className=" grid grid-cols-2 grid-flow-col ">
-    <h2 className="text-3xl font-bold text-center">Nuestras características</h2>
+    <h2 className=" place-items-start text-3xl top-2 font-bold text-center">Nuestras características</h2>
     {/* Contenido de la sección Características */}
   </div>
 
