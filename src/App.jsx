@@ -1,23 +1,19 @@
-import Clients from "./components/Clients";
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import Works from "./components/Works";
-import Reviews from "./components/Reviews";
-import Services from "./components/Services";
-import Footer from "./components/Footer";
 
-function App() {
+import React from 'react'
+import Hero from './componentes/Hero'
+
+
+ 
+
+const App = () => {
   return (
-    <div>
-      <Header />
-      <Hero />
-      <Clients />
-      <Works />
-      <Reviews />
-      <Services />
-      <Footer />
-    </div>
-  );
+    <>
+    
+    <Hero />
+
+    </>
+  
+  )
 }
 
-export default App;
+export default App
