@@ -1,4 +1,7 @@
-import React, { useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Calendar from 'react-calendar'
+import 'react-calendar/dist/Calendar.css'
 
 const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: string }> = ({ className, children, href, ...props }) => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -89,9 +92,67 @@ const Particles: React.FC = () => {
   return <canvas id="particles" className="absolute inset-0 z-0" />
 }
 
+const Modal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.ReactNode }> = ({ isOpen, onClose, children }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -50, opacity: 0 }}
+            className="bg-gray-800 p-6 rounded-lg max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+const FeatureCard: React.FC<{ icon: string; title: string; description: string }> = ({ icon, title, description }) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      className="bg-gray-800 p-6 rounded-lg text-center hover:bg-gray-700 transition-colors duration-300"
+    >
+      <div className="text-4xl mb-4">{icon}</div>
+      <h3 className="text-xl font-bold mb-2">{title}</h3>
+      <p className="text-gray-400">{description}</p>
+    </motion.div>
+  )
+}
+
+const GameCard: React.FC<{ title: string; image: string; onClick: () => void }> = ({ title, image, onClick }) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      className="bg-gray-800 rounded-lg overflow-hidden"
+    >
+      <img src={image} alt={title} className="w-full h-48 object-cover" />
+      <div className="p-4">
+        <h3 className="text-xl font-bold">{title}</h3>
+        <Button className="mt-4 w-full" onClick={onClick}>Registrarse</Button>
+      </div>
+    </motion.div>
+  )
+}
+
 export const GamerLanding: React.FC = () => {
   const [glowColor, setGlowColor] = useState('from-purple-600 to-blue-600')
   const [playerCount, setPlayerCount] = useState(0)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedGame, setSelectedGame] = useState('')
+  const [registeredEvents, setRegisteredEvents] = useState<{ [key: string]: string }>({})
+  const [formData, setFormData] = useState({ fullName: '', email: '', date: '' })
   
   useEffect(() => {
     const colors = [
@@ -114,6 +175,19 @@ export const GamerLanding: React.FC = () => {
       clearInterval(countInterval)
     }
   }, [])
+
+  const handleGameClick = (game: string) => {
+    setSelectedGame(game)
+    setIsModalOpen(true)
+  }
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault()
+    const eventDate = new Date(formData.date).toISOString().split('T')[0]
+    setRegisteredEvents(prev => ({ ...prev, [eventDate]: selectedGame }))
+    setIsModalOpen(false)
+    setFormData({ fullName: '', email: '', date: '' })
+  }
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative">
@@ -160,11 +234,29 @@ export const GamerLanding: React.FC = () => {
             <div className={`absolute inset-0 bg-gradient-to-r ${glowColor} opacity-20 blur-3xl transition-all duration-1000 ease-in-out`}></div>
             <div className="container mx-auto text-center relative z-10">
               <h2 className="text-4xl font-bold mb-8">Juegos Destacados</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <GameCard title="Nexo Cibernético" image="/placeholder.svg?height=200&width=300" />
-                <GameCard title="Odisea Estelar" image="/placeholder.svg?height=200&width=300" />
-                <GameCard title="Samurái Neón" image="/placeholder.svg?height=200&width=300" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <GameCard title="Nexo Cibernético" image="/placeholder.svg?height=200&width=300" onClick={() => handleGameClick("Nexo Cibernético")} />
+                <GameCard title="Odisea Estelar" image="/placeholder.svg?height=200&width=300" onClick={() => handleGameClick("Odisea Estelar")} />
+                <GameCard title="Samurái Neón" image="/placeholder.svg?height=200&width=300" onClick={() => handleGameClick("Samurái Neón")} />
+                <GameCard title="Leyendas del Cosmos" image="/placeholder.svg?height=200&width=300" onClick={() => handleGameClick("Leyendas del Cosmos")} />
               </div>
+            </div>
+          </section>
+
+          <section className="py-20 bg-gray-900">
+            <div className="container mx-auto">
+              <h2 className="text-4xl font-bold mb-8 text-center">Calendario de Torneos</h2>
+              <Calendar
+                className="mx-auto bg-gray-800 p-4 rounded-lg"
+                tileContent={({ date }) => {
+                  const eventDate = date.toISOString().split('T')[0]
+                  if (registeredEvents[eventDate]) {
+                    return <div className="bg-purple-600 rounded-full w-2 h-2 mx-auto"></div>
+                  }
+                  return null
+                }}
+                tileClassName="text-white hover:bg-gray-700"
+              />
             </div>
           </section>
 
@@ -203,28 +295,36 @@ export const GamerLanding: React.FC = () => {
           </div>
         </footer>
       </div>
-    </div>
-  )
-}
 
-function FeatureCard({ icon, title, description }: { icon: string, title: string, description: string }) {
-  return (
-    <div className="bg-gray-800 p-6 rounded-lg text-center hover:bg-gray-700 transition-colors duration-300 transform hover:scale-105">
-      <div className="text-4xl mb-4">{icon}</div>
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-gray-400">{description}</p>
-    </div>
-  )
-}
-
-function GameCard({ title, image }: { title: string, image: string }) {
-  return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden transform hover:scale-105 transition-transform duration-300">
-      <img src={image} alt={title} className="w-full h-48 object-cover" />
-      <div className="p-4">
-        <h3 className="text-xl font-bold">{title}</h3>
-        <Button className="mt-4 w-full">Jugar Ahora</Button>
-      </div>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h3 className="text-2xl font-bold mb-4">Registrarse para {selectedGame}</h3>
+        <form onSubmit={handleRegister}>
+          <Input
+            type="text"
+            placeholder="Nombre completo"
+            className="mb-4"
+            value={formData.fullName}
+            onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+            required
+          />
+          <Input
+            type="email"
+            placeholder="Correo electrónico"
+            className="mb-4"
+            value={formData.email}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            required
+          />
+          <Input
+            type="date"
+            className="mb-4"
+            value={formData.date}
+            onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+            required
+          />
+          <Button type="submit" className="w-full">Registrarse</Button>
+        </form>
+      </Modal>
     </div>
   )
 }
